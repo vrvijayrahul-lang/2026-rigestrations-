@@ -12,6 +12,7 @@
 // ====================================================================
 
 const admin = require("firebase-admin");
+const { getAuth } = require("firebase-admin/auth");
 const path  = require("path");
 
 const email = process.argv[2];
@@ -27,11 +28,11 @@ const keyFile = path.join(__dirname, "serviceAccountKey.json");
 let app;
 try {
   app = admin.initializeApp({
-    credential: admin.credential.cert(require(keyFile)),
+    credential: admin.cert(require(keyFile)),
   });
 } catch (err) {
   console.error("\nCould not initialize firebase-admin.");
-  console.error("Make sure serviceAccountKey.json exists in the project root.");
+  console.error("Make sure serviceAccountKey.json exists in the project root and is valid.");
   console.error("Generate one at:");
   console.error("  https://console.firebase.google.com/project/registrations-29eb8/settings/serviceaccounts/adminsdk\n");
   console.error("Underlying error:", err.message, "\n");
@@ -40,11 +41,12 @@ try {
 
 (async () => {
   try {
-    const user = await admin.auth().getUserByEmail(email);
-    await admin.auth().setCustomUserClaims(user.uid, { admin: true });
+    const auth = getAuth(app);
+    const user = await auth.getUserByEmail(email);
+    await auth.setCustomUserClaims(user.uid, { admin: true });
 
     // Force a token refresh by revoking & re-issuing
-    await admin.auth().revokeRefreshTokens(user.uid);
+    await auth.revokeRefreshTokens(user.uid);
 
     console.log("\n  admin: true claim set for", email);
     console.log("  uid:", user.uid);
