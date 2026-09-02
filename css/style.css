@@ -539,6 +539,25 @@ a { color: inherit; }
   color: var(--ink);
   word-break: break-word;
 }
+.hero-subtitle {
+  display: block;
+  margin-top: 1.25rem;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  font-family: 'Geist', sans-serif;
+}
+.hero-subtitle em {
+  font-family: inherit;
+  font-style: normal;
+  background: linear-gradient(120deg, var(--violet), var(--emerald));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 600;
+}
 .hero h1 .accent { font-style: normal; }
 .hero .lede {
   margin-top: 1.5rem;
