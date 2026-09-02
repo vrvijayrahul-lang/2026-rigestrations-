@@ -1985,6 +1985,19 @@ tbody td { color: var(--ink-soft); }
   .nav-overlay a .num { width: 24px; font-size: 10px; }
   .footer { padding: 2.5rem 1rem 1.25rem; }
   .footer-bottom { font-size: 10px; flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+
+  /* Mobile-only perf fix: hide the body::after noise overlay on phones.
+     It uses position:fixed + mix-blend-mode:overlay + an SVG noise
+     filter, which forces a full-viewport GPU repaint every frame and is
+     the most likely cause of scroll jank. The visual difference is
+     imperceptible (it's at 2.5% opacity). Desktop keeps it as-is. */
+  body::after { display: none; }
+
+  /* iOS Safari auto-zooms the page when a form field is focused if
+     its font-size is below 16px. This is a real iOS bug, not a
+     design choice — the inputs stay the same size visually because
+     16px is also what they already are on most fields. */
+  input, select, textarea { font-size: 16px; }
 }
 
 @media (max-width: 480px) {
