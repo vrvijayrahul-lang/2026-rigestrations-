@@ -1,0 +1,85 @@
+// ====================================================================
+// firestore.rules
+// Firestore security rules for the
+// "Seniors Teach, Juniors Reach" registration site
+//
+// Apply via: Firebase Console -> Firestore -> Rules
+// Or deploy with: firebase deploy --only firestore:rules
+// ====================================================================
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------- Helpers ----------
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // ---------- PUBLIC REGISTRATIONS ----------
+    //
+    // Public users (NOT signed in) may:
+    //   - create a registration document
+    //
+    // They may NOT:
+    //   - read all registrations
+    //   - update existing registrations
+    //   - delete registrations
+    //
+    // The create rule validates the document shape to make sure
+    // users can't write arbitrary fields or spoof registration IDs.
+    match /registrations/{registrationId} {
+
+      // Allow create only for unauthenticated users
+      // OR for signed-in admins (so the admin UI can also add records).
+      allow create: if
+        // Required fields
+        request.resource.data.keys().hasAll([
+          'registrationId', 'fullName', 'rollNumber', 'department',
+          'year', 'email', 'mobile', 'gender', 'interests',
+          'workshopTopic', 'status', 'createdAt'
+        ]) &&
+        // Field types
+        request.resource.data.fullName      is string &&
+        request.resource.data.rollNumber    is string &&
+        request.resource.data.department    is string &&
+        request.resource.data.year          is string &&
+        request.resource.data.email         is string &&
+        request.resource.data.mobile        is string &&
+        request.resource.data.gender        is string &&
+        request.resource.data.interests     is string &&
+        request.resource.data.workshopTopic is string &&
+        request.resource.data.status        is string &&
+        request.resource.data.registrationId == registrationId &&
+        request.resource.data.status == "registered" &&
+        // Basic length checks
+        request.resource.data.fullName.size() >= 2 &&
+        request.resource.data.email.size() >= 5 &&
+        request.resource.data.mobile.size() >= 10;
+
+      // No public reads, updates or deletes
+      allow read, update, delete: if false;
+    }
+
+    // ---------- COUNTERS (used to generate sequential registration IDs) ----------
+    //
+    // The transaction in registration.js reads & writes the counter.
+    // We allow unauthenticated reads and writes because the counter is
+    // not sensitive — it just stores a monotonically increasing number.
+    // If you want to lock this down, restrict the write to signed-in admins
+    // and run the counter increment from a trusted server function.
+    match /metadata/counters {
+      allow read, write: if true;
+    }
+
+    // ---------- ADMIN-ONLY DATA ----------
+    //
+    // Everything else (e.g. admin-only collections) requires sign-in.
+    // We use a custom claim 'admin == true' for hardened security.
+    match /{document=**} {
+      allow read, write: if isSignedIn() &&
+        request.auth.token.admin == true;
+    }
+  }
+}

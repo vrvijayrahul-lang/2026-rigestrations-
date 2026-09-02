@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Register — STJR MMXXVI</title>
+  <meta name="description" content="Register for the Seniors Teach, Juniors Reach workshop at P V K N Government Degree College." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <nav class="nav-floating" id="nav">
+    <a href="index.html" class="nav-brand">
+      <div class="nav-mark"><span>STJR</span></div>
+      <span>Register</span>
+    </a>
+    <div class="nav-links">
+      <a class="nav-link" href="index.html">Home</a>
+      <a class="nav-link active" href="register.html">Register</a>
+      <a class="nav-link" href="admin-login.html">Console</a>
+    </div>
+    <a href="index.html" class="btn-magnetic btn-glass nav-cta-desktop">
+      <span>Cancel</span>
+      <span class="icon-pill" aria-hidden="true">←</span>
+    </a>
+    <button class="hamburger" id="hamburger" aria-label="Open menu">
+      <span></span><span></span>
+    </button>
+  </nav>
+
+  <div class="nav-overlay" id="navOverlay">
+    <a href="index.html"><span class="num">01</span> Home</a>
+    <a href="register.html"><span class="num">02</span> <em>Register</em></a>
+    <a href="admin-login.html"><span class="num">03</span> <em>Console</em></a>
+    <div class="overlay-foot"><span>STJR · MMXXVI</span></div>
+  </div>
+
+  <main class="auth-wrap">
+    <article class="auth-card" data-reveal>
+      <header class="auth-header">
+        <div class="mark">S</div>
+        <h1>Register for <em>STJR</em>.</h1>
+        <p>One form. Sixty seconds. A registration ID in return.</p>
+      </header>
+
+      <div id="formAlert" class="alert" role="alert"></div>
+
+      <form id="registrationForm" novalidate>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="fullName">Full name <span class="req">*</span></label>
+            <div class="input-bezel" id="bezel-fullName">
+              <div class="input-core">
+                <input type="text" id="fullName" name="fullName" placeholder="e.g. Srividya P" autocomplete="name" required />
+              </div>
+            </div>
+            <div class="field-error" id="err-fullName"></div>
+          </div>
+
+          <div class="form-group">
+            <label for="rollNumber">Roll number <span class="req">*</span></label>
+            <div class="input-bezel" id="bezel-rollNumber">
+              <div class="input-core">
+                <input type="text" id="rollNumber" name="rollNumber" placeholder="e.g. 23BBA045" autocomplete="off" required />
+              </div>
+            </div>
+            <div class="field-error" id="err-rollNumber"></div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="department">Department <span class="req">*</span></label>
+            <div class="input-bezel" id="bezel-department">
+              <div class="input-core">
+                <select id="department" name="department" required>
+                  <option value="">Select your department</option>
+                  <option value="B.A.">B.A.</option>
+                  <option value="B.Com">B.Com</option>
+                  <option value="B.Sc">B.Sc</option>
+                  <option value="B.Sc (MPC)">B.Sc (MPC)</option>
+                  <option value="B.Sc (BZC)">B.Sc (BZC)</option>
+                  <option value="BCA">BCA</option>
+                  <option value="BBA">BBA</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+            </div>
+            <div class="field-error" id="err-department"></div>
+          </div>
+
+          <div class="form-group">
+            <label for="year">Year <span class="req">*</span></label>
+            <div class="input-bezel" id="bezel-year">
+              <div class="input-core">
+                <select id="year" name="year" required>
+                  <option value="">Select your year</option>
+                  <option value="1st Year">1st Year</option>
+                  <option value="2nd Year">2nd Year</option>
+                  <option value="3rd Year">3rd Year</option>
+                </select>
+              </div>
+            </div>
+            <div class="field-error" id="err-year"></div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="email">Email <span class="req">*</span></label>
+            <div class="input-bezel" id="bezel-email">
+              <div class="input-core">
+                <input type="email" id="email" name="email" placeholder="you@pvkn.edu" autocomplete="email" required />
+              </div>
+            </div>
+            <div class="field-error" id="err-email"></div>
+          </div>
+
+          <div class="form-group">
+            <label for="mobile">Mobile <span class="req">*</span></label>
+            <div class="input-bezel" id="bezel-mobile">
+              <div class="input-core">
+                <input type="tel" id="mobile" name="mobile" placeholder="10-digit mobile" inputmode="numeric" pattern="[6-9][0-9]{9}" maxlength="10" autocomplete="tel" required />
+              </div>
+            </div>
+            <div class="field-error" id="err-mobile"></div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="gender">Gender <span class="req">*</span></label>
+          <div class="input-bezel" id="bezel-gender">
+            <div class="input-core">
+              <select id="gender" name="gender" required>
+                <option value="">Select</option>
+                <option value="Female">Female</option>
+                <option value="Male">Male</option>
+                <option value="Prefer not to say">Prefer not to say</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+          <div class="field-error" id="err-gender"></div>
+        </div>
+
+        <div class="form-group">
+          <label for="interests">Skills &amp; interests <span class="req">*</span></label>
+          <div class="input-bezel" id="bezel-interests">
+            <div class="input-core">
+              <textarea id="interests" name="interests" rows="2" placeholder="e.g. web dev, public speaking, financial modelling, sketching…" required></textarea>
+            </div>
+          </div>
+          <div class="field-error" id="err-interests"></div>
+        </div>
+
+        <div class="form-group">
+          <label for="workshopTopic">Preferred topic <span class="req">*</span></label>
+          <div class="input-bezel" id="bezel-workshopTopic">
+            <div class="input-core">
+              <select id="workshopTopic" name="workshopTopic" required>
+                <option value="">Choose your preferred topic</option>
+                <option value="Programming Fundamentals">Programming Fundamentals</option>
+                <option value="Web Development Basics">Web Development Basics</option>
+                <option value="Data & Spreadsheets">Data &amp; Spreadsheets</option>
+                <option value="Communication & Presentation">Communication &amp; Presentation</option>
+                <option value="Study Techniques & Time Management">Study Techniques &amp; Time Management</option>
+                <option value="Career Planning & Internships">Career Planning &amp; Internships</option>
+                <option value="Other">Other (tell us in motivation)</option>
+              </select>
+            </div>
+          </div>
+          <div class="field-error" id="err-workshopTopic"></div>
+        </div>
+
+        <div class="form-group">
+          <label for="motivation">Motivation <span style="color: var(--ink-mute); font-weight: 400;">(optional)</span></label>
+          <div class="input-bezel" id="bezel-motivation">
+            <div class="input-core">
+              <textarea id="motivation" name="motivation" rows="3" placeholder="A line or two. Why this, why now, what you want to leave with."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" id="submitBtn" class="btn-submit">Register Now</button>
+      </form>
+
+      <p class="auth-foot">
+        Already registered? <a href="index.html">Back to home</a>
+      </p>
+    </article>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-bottom">
+      <span>© MMXXVI P V K N Government Degree College</span>
+      <span>STJR · Registration</span>
+    </div>
+  </footer>
+
+  <script>
+    const nav = document.getElementById("nav");
+    if (nav) {
+      window.addEventListener("scroll", () => {
+        nav.classList.toggle("is-scrolled", window.scrollY > 20);
+      }, { passive: true });
+    }
+    const ham = document.getElementById("hamburger");
+    const overlay = document.getElementById("navOverlay");
+    if (ham && overlay) {
+      ham.addEventListener("click", () => {
+        ham.classList.toggle("active");
+        overlay.classList.toggle("open");
+        document.body.style.overflow = overlay.classList.contains("open") ? "hidden" : "";
+      });
+      overlay.querySelectorAll("a").forEach(a => a.addEventListener("click", () => {
+        ham.classList.remove("active");
+        overlay.classList.remove("open");
+        document.body.style.overflow = "";
+      }));
+    }
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('is-visible'); io.unobserve(e.target); } });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('[data-reveal]').forEach(el => io.observe(el));
+  </script>
+
+  <script type="module" src="js/registration.js"></script>
+
+</body>
+</html>

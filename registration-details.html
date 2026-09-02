@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Registration Record — Admin Console</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <nav class="nav-floating" id="nav">
+    <a href="admin-dashboard.html" class="nav-brand">
+      <div class="nav-mark"><span>STJR</span></div>
+      <span>Console · Record</span>
+    </a>
+    <a href="admin-dashboard.html" class="btn-magnetic btn-glass nav-cta-desktop">
+      <span>Back</span>
+      <span class="icon-pill" aria-hidden="true">←</span>
+    </a>
+    <button class="hamburger" id="hamburger" aria-label="Open menu">
+      <span></span><span></span>
+    </button>
+  </nav>
+
+  <div class="nav-overlay" id="navOverlay">
+    <a href="admin-dashboard.html"><span class="num">01</span> <em>Console</em></a>
+    <a href="index.html"><span class="num">02</span> Home</a>
+    <div class="overlay-foot"><span>STJR · MMXXVI</span></div>
+  </div>
+
+  <div class="dashboard">
+    <div id="content" style="margin-top: 1rem;">
+      <div class="empty-state">
+        <div class="icon font-display"><em>·</em></div>
+        <p>Loading registration…</p>
+      </div>
+    </div>
+
+    <div class="text-center mt-20">
+      <a href="admin-dashboard.html" class="btn-magnetic btn-glass" style="padding-left: 22px;">
+        <span>Back to console</span>
+        <span class="icon-pill" aria-hidden="true">←</span>
+      </a>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="footer-bottom">
+      <span>© MMXXVI P V K N Government Degree College</span>
+      <span>Admin Console</span>
+    </div>
+  </footer>
+
+  <script>
+    const nav = document.getElementById("nav");
+    if (nav) {
+      window.addEventListener("scroll", () => {
+        nav.classList.toggle("is-scrolled", window.scrollY > 20);
+      }, { passive: true });
+    }
+    const ham = document.getElementById("hamburger");
+    const overlay = document.getElementById("navOverlay");
+    if (ham && overlay) {
+      ham.addEventListener("click", () => {
+        ham.classList.toggle("active");
+        overlay.classList.toggle("open");
+        document.body.style.overflow = overlay.classList.contains("open") ? "hidden" : "";
+      });
+      overlay.querySelectorAll("a").forEach(a => a.addEventListener("click", () => {
+        ham.classList.remove("active");
+        overlay.classList.remove("open");
+        document.body.style.overflow = "";
+      }));
+    }
+  </script>
+
+  <script type="module">
+    import { auth, db, doc, getDoc, onAuthStateChanged } from "./js/firebase-config.js";
+
+    const content = document.getElementById("content");
+
+    function escapeHtml(s) {
+      if (s == null) return "";
+      return String(s)
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;").replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function getIdFromUrl() {
+      const p = new URLSearchParams(window.location.search);
+      return p.get("id");
+    }
+
+    function formatDate(ts) {
+      if (!ts) return "—";
+      const d = ts.toDate ? ts.toDate() : new Date(ts);
+      return isNaN(d.getTime()) ? "—" : d.toLocaleString("en-IN", {
+        day: "2-digit", month: "short", year: "numeric",
+        hour: "2-digit", minute: "2-digit",
+      });
+    }
+
+    async function load() {
+      const id = getIdFromUrl();
+      if (!id) {
+        content.innerHTML = `<div class="empty-state"><div class="icon font-display"><em>!</em></div><p>Missing registration ID.</p></div>`;
+        return;
+      }
+      try {
+        const snap = await getDoc(doc(db, "registrations", id));
+        if (!snap.exists()) {
+          content.innerHTML = `<div class="empty-state"><div class="icon font-display"><em>?</em></div><p>Registration <strong>${escapeHtml(id)}</strong> not found.</p></div>`;
+          return;
+        }
+        const r = snap.data();
+        content.innerHTML = `
+          <div class="details-wrap" data-reveal>
+            <span class="card-meta" style="color: var(--ink-mute); display:block; margin-bottom: 0.5rem; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;">Registration Record</span>
+            <h2 class="font-display">${escapeHtml(r.fullName)}</h2>
+            <p class="sub">${escapeHtml(r.registrationId)} · ${escapeHtml(r.department || "")} · ${escapeHtml(r.year || "")}</p>
+
+            <div class="reg-id-display font-mono" style="margin: 1.5rem 0;">${escapeHtml(r.registrationId)}</div>
+
+            <div class="detail-grid">
+              <div class="detail-item"><div class="lbl">Full Name</div><div class="val">${escapeHtml(r.fullName)}</div></div>
+              <div class="detail-item"><div class="lbl">Roll Number</div><div class="val font-mono">${escapeHtml(r.rollNumber)}</div></div>
+              <div class="detail-item"><div class="lbl">Department</div><div class="val">${escapeHtml(r.department)}</div></div>
+              <div class="detail-item"><div class="lbl">Year</div><div class="val">${escapeHtml(r.year)}</div></div>
+              <div class="detail-item"><div class="lbl">Email</div><div class="val">${escapeHtml(r.email)}</div></div>
+              <div class="detail-item"><div class="lbl">Mobile</div><div class="val font-mono">${escapeHtml(r.mobile)}</div></div>
+              <div class="detail-item"><div class="lbl">Gender</div><div class="val">${escapeHtml(r.gender)}</div></div>
+              <div class="detail-item"><div class="lbl">Status</div><div class="val" style="color: var(--emerald);">${escapeHtml(r.status || "registered")}</div></div>
+              <div class="detail-item full"><div class="lbl">Skills / Interests</div><div class="val">${escapeHtml(r.interests)}</div></div>
+              <div class="detail-item full"><div class="lbl">Preferred Topic</div><div class="val">${escapeHtml(r.workshopTopic)}</div></div>
+              <div class="detail-item full"><div class="lbl">Motivation</div><div class="val">${escapeHtml(r.motivation || "—")}</div></div>
+              <div class="detail-item"><div class="lbl">Registered At</div><div class="val">${escapeHtml(formatDate(r.createdAt))}</div></div>
+            </div>
+          </div>
+        `;
+        const io = new IntersectionObserver((entries) => {
+          entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('is-visible'); io.unobserve(e.target); } });
+        }, { threshold: 0.1 });
+        content.querySelectorAll('[data-reveal]').forEach(el => io.observe(el));
+      } catch (err) {
+        content.innerHTML = `<div class="empty-state"><div class="icon font-display"><em>!</em></div><p>Failed to load: ${escapeHtml(err.message || String(err))}</p></div>`;
+      }
+    }
+
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        window.location.replace("admin-login.html");
+      } else {
+        load();
+      }
+    });
+  </script>
+
+</body>
+</html>
