@@ -54,6 +54,26 @@ function formatDate(timestamp) {
   }
 }
 
+// Debounce: avoid re-rendering the whole table on every keystroke.
+function debounce(fn, ms) {
+  let t;
+  return function (...args) {
+    clearTimeout(t);
+    t = setTimeout(() => fn.apply(this, args), ms);
+  };
+}
+
+let renderScheduled = false;
+function scheduleRender() {
+  if (renderScheduled) return;
+  renderScheduled = true;
+  requestAnimationFrame(() => {
+    renderScheduled = false;
+    renderTable();
+    renderStats();
+  });
+}
+
 function applyFilters() {
   const q   = (searchInput?.value || "").toLowerCase().trim();
   const dpt = filterDept?.value || "";
@@ -72,8 +92,8 @@ function applyFilters() {
     return true;
   });
 
+  // Stats don't change with search/filter — only update them on data load.
   renderTable();
-  renderStats();
 }
 
 function renderStats() {
@@ -146,8 +166,11 @@ function renderTable() {
     return tb - ta;
   });
 
-  tableBody.innerHTML = sorted.map((r) => `
-    <tr>
+  // Build via DocumentFragment for a single DOM commit.
+  const frag = document.createDocumentFragment();
+  for (const r of sorted) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
       <td><span class="reg-id-pill">${escapeHtml(r.registrationId || "—")}</span></td>
       <td>${escapeHtml(r.fullName)}</td>
       <td>${escapeHtml(r.rollNumber)}</td>
@@ -162,13 +185,13 @@ function renderTable() {
           <button class="btn-icon danger" data-delete="${escapeHtml(r.registrationId || "")}">Delete</button>
         </div>
       </td>
-    </tr>
-  `).join("");
+    `;
+    frag.appendChild(tr);
+  }
+  tableBody.replaceChildren(frag);
 
-  // Attach delete handlers
-  tableBody.querySelectorAll("button[data-delete]").forEach(btn => {
-    btn.addEventListener("click", () => handleDelete(btn.dataset.delete));
-  });
+  // Delete handlers are bound via event delegation on tableBody
+  // (set up once in bindUI), so no per-row listeners here.
 }
 
 async function handleDelete(registrationId) {
@@ -225,10 +248,23 @@ function bindUI() {
   yearStatsEl = document.getElementById("yearStats");
   emptyState  = document.getElementById("emptyState");
 
-  if (searchInput) searchInput.addEventListener("input", applyFilters);
+  // Debounced search: avoids re-rendering the table on every keystroke.
+  // 150 ms feels instant to a human but cuts ~90% of intermediate renders
+  // while the user is still typing.
+  const debouncedApply = debounce(applyFilters, 150);
+  if (searchInput) searchInput.addEventListener("input", debouncedApply);
   if (filterDept)  filterDept.addEventListener("change", applyFilters);
   if (filterYear)  filterYear.addEventListener("change", applyFilters);
   if (refreshBtn)  refreshBtn.addEventListener("click", loadRegistrations);
+
+  // Event delegation: one listener on the tbody, not one per row.
+  // Critical for large tables — 500 rows = 500 listeners avoided.
+  if (tableBody) {
+    tableBody.addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-delete]");
+      if (btn) handleDelete(btn.dataset.delete);
+    });
+  }
 
   if (logoutBtn) {
     logoutBtn.addEventListener("click", async () => {
