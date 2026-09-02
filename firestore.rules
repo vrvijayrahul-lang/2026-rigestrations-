@@ -17,6 +17,10 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.admin == true;
+    }
+
     // ---------- PUBLIC REGISTRATIONS ----------
     //
     // Public users (NOT signed in) may:
@@ -31,10 +35,13 @@ service cloud.firestore {
     // users can't write arbitrary fields or spoof registration IDs.
     match /registrations/{registrationId} {
 
-      // Allow create only for unauthenticated users
+      // Allow create for unauthenticated users
       // OR for signed-in admins (so the admin UI can also add records).
+      //
+      // IMPORTANT: the incoming document's `registrationId` field must
+      // match the document ID in the path so users cannot forge IDs.
       allow create: if
-        // Required fields
+        // Required fields present
         request.resource.data.keys().hasAll([
           'registrationId', 'fullName', 'rollNumber', 'department',
           'year', 'email', 'mobile', 'gender', 'interests',
@@ -51,35 +58,48 @@ service cloud.firestore {
         request.resource.data.interests     is string &&
         request.resource.data.workshopTopic is string &&
         request.resource.data.status        is string &&
+        request.resource.data.registrationId is string &&
+        // ID in payload must match the document ID in the path
         request.resource.data.registrationId == registrationId &&
         request.resource.data.status == "registered" &&
-        // Basic length checks
+        // Length sanity checks
         request.resource.data.fullName.size() >= 2 &&
-        request.resource.data.email.size() >= 5 &&
-        request.resource.data.mobile.size() >= 10;
+        request.resource.data.fullName.size() <= 200 &&
+        request.resource.data.email.size()    >= 5 &&
+        request.resource.data.email.size()    <= 200 &&
+        request.resource.data.mobile.size()   >= 10 &&
+        request.resource.data.mobile.size()   <= 20 &&
+        // createdAt is a serverTimestamp() — it resolves to a real
+        // Timestamp server-side. We don't type-check it because some
+        // SDK versions pass the sentinel at rule-evaluation time.
+        request.resource.data.createdAt != null;
 
-      // No public reads, updates or deletes
-      allow read, update, delete: if false;
+      // Admins can read everything; everyone else cannot.
+      allow read: if isAdmin();
+
+      // No public updates; admins may update (e.g. to mark attended)
+      allow update: if isAdmin();
+
+      // Only admins can delete
+      allow delete: if isAdmin();
     }
 
     // ---------- COUNTERS (used to generate sequential registration IDs) ----------
     //
     // The transaction in registration.js reads & writes the counter.
-    // We allow unauthenticated reads and writes because the counter is
-    // not sensitive — it just stores a monotonically increasing number.
-    // If you want to lock this down, restrict the write to signed-in admins
-    // and run the counter increment from a trusted server function.
-    match /metadata/counters {
+    // Public read+write is allowed because the counter is not sensitive
+    // — it only stores a monotonically increasing number.
+    // If you want to lock this down, restrict the write to admins and
+    // run the counter increment from a trusted server function instead.
+    match /metadata/{doc} {
       allow read, write: if true;
     }
 
     // ---------- ADMIN-ONLY DATA ----------
     //
-    // Everything else (e.g. admin-only collections) requires sign-in.
-    // We use a custom claim 'admin == true' for hardened security.
+    // Any other collection requires the admin custom claim.
     match /{document=**} {
-      allow read, write: if isSignedIn() &&
-        request.auth.token.admin == true;
+      allow read, write: if isAdmin();
     }
   }
 }
