@@ -2122,6 +2122,77 @@ tbody td { color: var(--ink-soft); }
 }
 
 /* -----------------------------------------------
+   REGISTRATION PAGE — NAV OVERFLOW FIX
+   Scoped to body.page-register so the landing page
+   (and every other page) keeps its existing nav.
+   ----------------------------------------------- */
+
+/* Hard-lock horizontal scroll on the registration page only */
+body.page-register { overflow-x: hidden; }
+
+/* 1) Cancel the desktop max-width and force full-bleed
+      so the pill never exceeds the viewport on small screens. */
+@media (max-width: 860px) {
+  body.page-register .nav-floating {
+    left: 0.5rem;
+    right: 0.5rem;
+    width: auto;
+    max-width: calc(100vw - 1rem);
+    transform: none;
+    box-sizing: border-box;
+    gap: 2px;
+    padding: 5px 5px 5px 10px;
+  }
+  body.page-register .nav-floating.is-scrolled { transform: none; }
+}
+
+/* 2) Brand — let the label shrink first instead of pushing
+      the hamburger off-screen. The mark stays fixed. */
+@media (max-width: 860px) {
+  body.page-register .nav-brand { gap: 8px; min-width: 0; flex: 1 1 auto; }
+  body.page-register .nav-brand > span:last-child {
+    max-width: none;     /* drop the 160px ceiling that was eating space */
+    font-size: 13px;
+  }
+}
+
+/* 3) Hamburger — slightly smaller on very small screens so
+      the brand text gets more room. */
+@media (max-width: 430px) {
+  body.page-register .hamburger {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+  }
+  body.page-register .hamburger span:nth-child(1) { top: 12px; }
+  body.page-register .hamburger span:nth-child(2) { top: 20px; }
+  body.page-register .hamburger.active span:nth-child(1) { top: 16px; }
+  body.page-register .hamburger.active span:nth-child(2) { top: 16px; }
+  body.page-register .hamburger span { left: 9px; right: 9px; }
+}
+
+/* 4) Tiny phones (≤360px): shorten the brand label so
+      "Register" still fits alongside the mark + hamburger. */
+@media (max-width: 360px) {
+  body.page-register .nav-floating {
+    left: 0.4rem;
+    right: 0.4rem;
+    padding: 4px 4px 4px 8px;
+    gap: 0;
+  }
+  body.page-register .nav-mark { width: 26px; height: 26px; font-size: 9px; }
+  body.page-register .nav-brand > span:last-child { font-size: 12.5px; }
+}
+
+/* 5) Defensive: prevent any internal nav child from
+      forcing horizontal overflow. */
+body.page-register .nav-floating,
+body.page-register .nav-floating * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* -----------------------------------------------
    REDUCED MOTION
    ----------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
