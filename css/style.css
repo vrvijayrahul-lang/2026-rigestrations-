@@ -2014,6 +2014,114 @@ tbody td { color: var(--ink-soft); }
 }
 
 /* -----------------------------------------------
+   REGISTRATION PAGE — MOBILE-FIRST OPTIMIZATIONS
+   ----------------------------------------------- */
+
+/* Auth card — tighter, full-width feel on phones */
+@media (max-width: 640px) {
+  .auth-card {
+    padding: 1.5rem 1.1rem;
+    border-radius: 22px;
+    max-width: 100%;
+  }
+  .auth-card.wide { max-width: 100%; }
+  .auth-header { margin-bottom: 1.5rem; }
+  .auth-header .mark { width: 46px; height: 46px; font-size: 1.25rem; margin-bottom: 1rem; }
+  .auth-header h1 { font-size: 1.55rem; }
+  .auth-header p { font-size: 0.875rem; }
+}
+
+/* Form row stacking — single column below 640, side-by-side above */
+@media (max-width: 639px) {
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .form-row .form-group { margin-bottom: 1.25rem; }
+  .form-row .form-group:last-child { margin-bottom: 0; }
+}
+
+/* Form fields — larger tap targets, better spacing */
+@media (max-width: 640px) {
+  .form-group { margin-bottom: 1.1rem; }
+  .form-group label { margin-bottom: 10px; font-size: 11.5px; }
+  .input-core input,
+  .input-core select,
+  .input-core textarea {
+    padding: 14px 16px;
+    font-size: 16px;
+  }
+  .input-core textarea { min-height: 90px; }
+  .input-bezel { border-radius: 14px; }
+  .input-core { border-radius: calc(14px - 0.375rem); }
+}
+
+/* Submit button — bigger hit area on mobile */
+@media (max-width: 640px) {
+  .btn-submit {
+    padding: 17px 24px;
+    font-size: 0.95rem;
+    min-height: 54px;
+    margin-top: 1.25rem;
+  }
+}
+
+/* Field error — readable on small screens */
+@media (max-width: 480px) {
+  .field-error { font-size: 11.5px; padding-left: 12px; }
+}
+
+/* Alert message */
+@media (max-width: 640px) {
+  .alert { padding: 12px 14px; font-size: 12.5px; border-radius: 12px; }
+}
+
+/* Auth foot — link sized for thumb tap */
+@media (max-width: 480px) {
+  .auth-foot { font-size: 12.5px; margin-top: 1.25rem; }
+}
+
+/* Auth-wrap — reduce top padding on short phones so the card is visible */
+@supports (height: 100dvh) {
+  @media (max-height: 700px) and (max-width: 640px) {
+    .auth-wrap { padding: 5.25rem 0.75rem 1.5rem; align-items: flex-start; }
+  }
+}
+
+/* Tap target for select chevron on mobile (a bit larger) */
+@media (max-width: 640px) {
+  .input-core select { background-position: right 14px center; padding-right: 38px; }
+}
+
+/* Prevent iOS form-zoom artifacts: explicit 16px on all interactive fields */
+@supports (-webkit-touch-callout: none) {
+  .input-core input,
+  .input-core select,
+  .input-core textarea { font-size: 16px !important; }
+}
+
+/* Smooth focus rings on touch devices (no hover flicker) */
+@media (hover: none) {
+  .input-bezel:focus-within { border-color: rgba(167, 139, 250, 0.5); }
+}
+
+/* Floating CTA-style submit button on very small screens — sticks to bottom for thumb reach */
+@media (max-width: 480px) {
+  .auth-card form { padding-bottom: 0.25rem; }
+}
+
+/* Reduce backdrop blur cost on mid-range mobile (fewer GPU layers) */
+@media (max-width: 640px) {
+  .auth-card { backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%); }
+  .input-bezel { backdrop-filter: none; -webkit-backdrop-filter: none; }
+}
+
+/* Footer credit — keep one line, truncate */
+@media (max-width: 380px) {
+  .footer-bottom > span { font-size: 9.5px; letter-spacing: 0.12em; }
+}
+
+/* -----------------------------------------------
    REDUCED MOTION
    ----------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5.0" />
   <title>Register — STJR MMXXVI</title>
   <meta name="description" content="Register for the Seniors Teach, Juniors Reach workshop at P V K N Government Degree College (Autonomous), Chittoor, Andhra Pradesh." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -53,7 +53,7 @@
             <label for="fullName">Full name <span class="req">*</span></label>
             <div class="input-bezel" id="bezel-fullName">
               <div class="input-core">
-                <input type="text" id="fullName" name="fullName" placeholder="e.g. Srividya P" autocomplete="name" required />
+                <input type="text" id="fullName" name="fullName" placeholder="e.g. Srividya P" autocomplete="name" autocapitalize="words" autocorrect="off" spellcheck="false" required />
               </div>
             </div>
             <div class="field-error" id="err-fullName"></div>
@@ -63,7 +63,7 @@
             <label for="rollNumber">Roll number <span class="req">*</span></label>
             <div class="input-bezel" id="bezel-rollNumber">
               <div class="input-core">
-                <input type="text" id="rollNumber" name="rollNumber" placeholder="e.g. 23BBA045" autocomplete="off" required />
+                <input type="text" id="rollNumber" name="rollNumber" placeholder="e.g. 23BBA045" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" inputmode="text" required />
               </div>
             </div>
             <div class="field-error" id="err-rollNumber"></div>
@@ -112,7 +112,7 @@
             <label for="email">Email <span class="req">*</span></label>
             <div class="input-bezel" id="bezel-email">
               <div class="input-core">
-                <input type="email" id="email" name="email" placeholder="you@pvkn.edu" autocomplete="email" required />
+                <input type="email" id="email" name="email" placeholder="you@pvkn.edu" autocomplete="email" autocapitalize="none" autocorrect="off" spellcheck="false" inputmode="email" required />
               </div>
             </div>
             <div class="field-error" id="err-email"></div>
@@ -149,7 +149,7 @@
           <label for="interests">Skills &amp; interests <span class="req">*</span></label>
           <div class="input-bezel" id="bezel-interests">
             <div class="input-core">
-              <textarea id="interests" name="interests" rows="2" placeholder="e.g. web dev, public speaking, financial modelling, sketching…" required></textarea>
+              <textarea id="interests" name="interests" rows="2" placeholder="e.g. web dev, public speaking, financial modelling, sketching…" autocapitalize="sentences" autocorrect="on" required></textarea>
             </div>
           </div>
           <div class="field-error" id="err-interests"></div>
@@ -178,7 +178,7 @@
           <label for="motivation">Motivation <span style="color: var(--ink-mute); font-weight: 400;">(optional)</span></label>
           <div class="input-bezel" id="bezel-motivation">
             <div class="input-core">
-              <textarea id="motivation" name="motivation" rows="3" placeholder="A line or two. Why this, why now, what you want to leave with."></textarea>
+              <textarea id="motivation" name="motivation" rows="3" placeholder="A line or two. Why this, why now, what you want to leave with." autocapitalize="sentences" autocorrect="on"></textarea>
             </div>
           </div>
         </div>
@@ -224,6 +224,55 @@
       entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('is-visible'); io.unobserve(e.target); } });
     }, { threshold: 0.1 });
     document.querySelectorAll('[data-reveal]').forEach(el => io.observe(el));
+
+    // --- Mobile registration niceties --------------------------------
+    // 1. Scroll the first invalid (or empty required) field into view
+    //    when the user taps Register — keeps them oriented on long forms.
+    const form = document.getElementById("registrationForm");
+    if (form) {
+      form.addEventListener("submit", () => {
+        requestAnimationFrame(() => {
+          const firstErr = form.querySelector(".field-error.show, .input-bezel.input-error");
+          if (firstErr) {
+            firstErr.scrollIntoView({ behavior: "smooth", block: "center" });
+            const input = firstErr.matches("input, select, textarea")
+              ? firstErr
+              : firstErr.parentElement.querySelector("input, select, textarea");
+            if (input) {
+              setTimeout(() => { try { input.focus({ preventScroll: true }); } catch (_) {} }, 350);
+            }
+          }
+        });
+      });
+    }
+
+    // 2. Tap outside any input to dismiss the soft keyboard on mobile
+    document.addEventListener("touchstart", (e) => {
+      const t = e.target;
+      if (!t.closest("input, select, textarea, label, button, a, [role='button']")) {
+        if (document.activeElement && document.activeElement.blur) {
+          document.activeElement.blur();
+        }
+      }
+    }, { passive: true });
+
+    // 3. Lock body scroll only when an input is focused on iOS to prevent
+    //    the "rubber band" jump when the keyboard collapses.
+    if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+      let lastY = 0;
+      document.addEventListener("focusin", (e) => {
+        if (e.target.matches("input, select, textarea")) {
+          lastY = window.scrollY;
+        }
+      });
+      document.addEventListener("focusout", () => {
+        requestAnimationFrame(() => {
+          if (Math.abs(window.scrollY - lastY) < 4) {
+            window.scrollTo({ top: lastY, behavior: "instant" in window ? "instant" : "auto" });
+          }
+        });
+      });
+    }
   </script>
 
   <script type="module" src="js/registration.js"></script>
