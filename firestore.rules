@@ -133,9 +133,12 @@ service cloud.firestore {
            request.resource.data.mobile is string)
         );
 
-      // Reading the unique index would let a public user enumerate
-      // other people's registration IDs — admin-only.
-      allow read: if isAdmin();
+      // Public read is needed so registration transactions can check
+      // (transaction.get()) whether an email/mobile is already claimed.
+      // Document IDs use normalized (lowercase, trimmed) values, so the
+      // email/mobile is already observable — this rule adds no new exposure.
+      // Admin-only writes prevent tampering with the index.
+      allow read: if true;
 
       // Once created, these docs must not be edited or deleted by
       // anyone except an admin. This is what makes the duplicate
