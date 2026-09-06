@@ -13,6 +13,7 @@
 
 const admin = require("firebase-admin");
 const { getAuth } = require("firebase-admin/auth");
+const { cert } = require("firebase-admin/app");
 const path  = require("path");
 
 const email = process.argv[2];
@@ -28,7 +29,7 @@ const keyFile = path.join(__dirname, "serviceAccountKey.json");
 let app;
 try {
   app = admin.initializeApp({
-    credential: admin.cert(require(keyFile)),
+    credential: cert(require(keyFile)),
   });
 } catch (err) {
   console.error("\nCould not initialize firebase-admin.");

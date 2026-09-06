@@ -22,6 +22,8 @@
 // ====================================================================
 
 const admin = require("firebase-admin");
+const { getFirestore, FieldValue } = require("firebase-admin/firestore");
+const { cert } = require("firebase-admin/app");
 const path  = require("path");
 
 const keyFile = path.join(__dirname, "serviceAccountKey.json");
@@ -29,7 +31,7 @@ const keyFile = path.join(__dirname, "serviceAccountKey.json");
 let app;
 try {
   app = admin.initializeApp({
-    credential: admin.cert(require(keyFile)),
+    credential: cert(require(keyFile)),
   });
 } catch (err) {
   console.error("\nCould not initialize firebase-admin.");
@@ -40,7 +42,7 @@ try {
   process.exit(1);
 }
 
-const db = admin.firestore();
+const db = getFirestore(app);
 
 // ---- Same normalization rules as js/registration.js ---------------
 function normalizeEmail(email) {
@@ -108,7 +110,7 @@ function mobileKeyDocId(normalizedMobile) {
           tx.set(emailRef, {
             registrationId: regId,
             email: normEmail,
-            migratedAt: admin.firestore.FieldValue.serverTimestamp(),
+            migratedAt: FieldValue.serverTimestamp(),
           });
           created++;
         } else {
@@ -119,7 +121,7 @@ function mobileKeyDocId(normalizedMobile) {
           tx.set(mobileRef, {
             registrationId: regId,
             mobile: normMobile,
-            migratedAt: admin.firestore.FieldValue.serverTimestamp(),
+            migratedAt: FieldValue.serverTimestamp(),
           });
           created++;
         } else {
