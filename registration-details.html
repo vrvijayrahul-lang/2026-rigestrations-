@@ -115,7 +115,11 @@
           content.innerHTML = `<div class="empty-state"><div class="icon font-display"><em>?</em></div><p>Registration <strong>${escapeHtml(id)}</strong> not found.</p></div>`;
           return;
         }
-        const r = snap.data() || {};
+        const r = snap.data() ?? {};
+        if (!r || typeof r !== "object") {
+          content.innerHTML = `<div class="empty-state"><div class="icon font-display"><em>!</em></div><p>Registration data is unreadable.</p></div>`;
+          return;
+        }
         content.innerHTML = `
           <div class="details-wrap" data-reveal>
             <span class="card-meta" style="color: var(--ink-mute); display:block; margin-bottom: 0.5rem; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;">Registration Record</span>

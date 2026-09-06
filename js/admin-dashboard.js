@@ -12,6 +12,7 @@ import {
   signOut,
   collection,
   getDocs,
+  getDoc,
   deleteDoc,
   doc,
   orderBy,
@@ -177,13 +178,41 @@ async function handleDelete(registrationId) {
   if (!ok) return;
 
   try {
-    await deleteDoc(doc(db, "registrations", registrationId));
-    console.log("Deleted", registrationId);
+    // Look up the registration so we can also clean up the unique-index docs.
+    // We need the normalized email/mobile keys to delete the right index docs.
+    const regRef = doc(db, "registrations", registrationId);
+    const regSnap = await getDoc(regRef);
+
+    const deletions = [deleteDoc(regRef)];
+
+    if (regSnap.exists()) {
+      const data = regSnap.data() || {};
+      const email  = normalizeEmailKey(data.emailKey || data.email);
+      const mobile = normalizeMobileKey(data.mobileKey || data.mobile);
+      // Only queue if we have a key to delete — guard against legacy registrations
+      // that may not have emailKey/mobileKey stored.
+      if (email)  deletions.push(deleteDoc(doc(db, "registrations_unique", email)));
+      if (mobile) deletions.push(deleteDoc(doc(db, "registrations_unique", mobile)));
+    }
+
+    await Promise.all(deletions);
+    console.log("Deleted registration and index docs for", registrationId);
     await loadRegistrations();
   } catch (err) {
     console.error("Delete failed:", err);
     alert("Delete failed: " + (err.message || err));
   }
+}
+
+function normalizeEmailKey(email) {
+  if (!email) return "";
+  return String(email).trim().toLowerCase();
+}
+
+function normalizeMobileKey(mobile) {
+  if (!mobile) return "";
+  const digits = String(mobile).replace(/\D+/g, "");
+  return digits.slice(-10);
 }
 
 // --------------------------------------------------------------------
