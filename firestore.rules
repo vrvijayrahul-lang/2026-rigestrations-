@@ -95,6 +95,54 @@ service cloud.firestore {
       allow read, write: if true;
     }
 
+    // ---------- UNIQUE-INDEX (duplicate-prevention) ----------
+    //
+    // Two single-document lookups per registration, keyed by the
+    // normalized email and the normalized mobile number:
+    //
+    //   registrations_unique/email___{normalizedEmail}
+    //   registrations_unique/mobile___{normalizedMobile}
+    //
+    // Public users may CREATE these docs (the registration transaction
+    // does the create). They may NOT read, list, update, or delete
+    // them — the registration ID stored inside is not something the
+    // submitter should be able to enumerate.
+    //
+    // Firestore's `allow create` is denied if the document already
+    // exists, so a second submission for the same email/mobile path
+    // will fail this rule even without an "exists" guard — the
+    // transaction will surface a permission-denied error which we
+    // map to the same DUPLICATE_REGISTRATION UX.
+    match /registrations_unique/{key} {
+      // Only the two known index shapes are accepted. `email__<...>`
+      // and `mobile__<...>` are the only allowed prefixes.
+      allow create: if
+        (key.matches('email__.*') || key.matches('mobile__.*')) &&
+        // Required fields present and well-typed.
+        request.resource.data.keys().hasAll(['registrationId', 'createdAt']) &&
+        request.resource.data.registrationId is string &&
+        request.resource.data.registrationId.size() > 0 &&
+        // Mirror the field in the document (purely so admins reading
+        // these docs from the console can see what they index).
+        (
+          (key.matches('email__.*') &&
+           request.resource.data.keys().hasAll(['email']) &&
+           request.resource.data.email is string) ||
+          (key.matches('mobile__.*') &&
+           request.resource.data.keys().hasAll(['mobile']) &&
+           request.resource.data.mobile is string)
+        );
+
+      // Reading the unique index would let a public user enumerate
+      // other people's registration IDs — admin-only.
+      allow read: if isAdmin();
+
+      // Once created, these docs must not be edited or deleted by
+      // anyone except an admin. This is what makes the duplicate
+      // check trustworthy.
+      allow update, delete: if isAdmin();
+    }
+
     // ---------- ADMIN-ONLY DATA ----------
     //
     // Any other collection requires the admin custom claim.

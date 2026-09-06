@@ -31,8 +31,9 @@ No PHP. No traditional backend.
 │   ├── auth-guard.js           # Protects admin pages
 │   └── admin-dashboard.js      # Dashboard logic
 │
-├── firestore.rules             # Security rules
+├── firestore.rules             # Security rules (incl. duplicate-prevention index)
 ├── firebase.json               # Firebase Hosting + Firestore config
+├── migrate-unique-index.js     # One-time data migration for the index
 └── README.md                   # This file
 ```
 
@@ -137,15 +138,48 @@ Your site will be live at `https://<project-id>.web.app`.
 2. `js/registration.js`:
    - Prevents page reload.
    - Validates all fields.
-   - Calls `getNextRegistrationId()` — a Firestore transaction on
-     `metadata/counters.registrationCounter` that safely increments
-     the counter even with concurrent users.
-   - Saves the document at `registrations/STJR-2026-0001` etc.
+   - Normalizes the email (trim + lowercase) and the mobile number
+     (digits only, last 10) for the duplicate check.
+   - Calls `createRegistrationAtomically()` — a single Firestore
+     transaction that:
+     1. Increments `metadata/counters.registrationCounter`.
+     2. Reads the unique-index docs at
+        `registrations_unique/email__{normalizedEmail}` and
+        `registrations_unique/mobile__{normalizedMobile}`.
+     3. If either exists, throws `DUPLICATE_REGISTRATION` and the
+        transaction rolls back — no counter increment, no new
+        registration ID consumed.
+     4. Otherwise writes both unique-index docs and the
+        `registrations/{registrationId}` document atomically.
    - **Only after Firestore confirms** the save, sets
      `sessionStorage` and redirects to `success.html`.
 3. `success.html` reads from `sessionStorage` and shows the ID + name.
-4. The counter transaction guarantees IDs like
-   `STJR-2026-0001`, `STJR-2026-0002`, … without duplicates.
+4. The transaction guarantees:
+   - Sequential IDs like `STJR-2026-0001`, `STJR-2026-0002`, … with
+     no gaps from failed duplicates.
+   - One registration per email and one per mobile number, even
+     under race conditions (two simultaneous submits with the same
+     email cannot both succeed).
+5. If a duplicate is detected, the user sees:
+   `Registration already exists. This email address or mobile number
+   has already been registered.` plus a field-level error on the
+   offending input.
+
+### Backfilling existing registrations
+
+The unique index is only built up for new submissions. If you already
+have registrations in the `registrations/` collection from before
+this change, run the one-time migration script **once** to backfill
+the corresponding `registrations_unique/` index docs. Without this
+step, an already-registered user could submit a second time and the
+duplicate check would pass.
+
+```bash
+# serviceAccountKey.json must be in the project root (see below).
+node migrate-unique-index.js
+```
+
+The script is idempotent — running it again is a no-op.
 
 ---
 
@@ -223,7 +257,14 @@ For the workshop, the simplest safe path is:
   wires search, filter, delete, refresh, logout.
 - `registration-details.html` — Single-record view, also auth-guarded.
 - `firestore.rules` — Allows public creates, blocks public reads,
-  and gates admin data behind signed-in (and ideally `admin` claim) users.
+  and gates admin data behind signed-in (and ideally `admin` claim)
+  users. The `registrations_unique/` collection enforces the
+  duplicate-prevention index: public users may `create` only (and
+  only on `email__*` / `mobile__*` paths); reads/updates/deletes are
+  admin-only.
+- `migrate-unique-index.js` — One-time script that backfills the
+  `registrations_unique/` index docs for any pre-existing
+  registrations. Run once after deploying the new rules.
 - `firebase.json` — Hosting + Firestore config (deploy-ready).
 
 ---
@@ -239,8 +280,7 @@ Registration form: <form id="registrationForm">
 Attaching submit event listener
 Registration form submitted
 Starting Firestore save
-Generated registration ID: STJR-2026-0001
-Firestore save successful
+Registration saved with ID: STJR-2026-0001
 Redirecting to success page
 ```
 
