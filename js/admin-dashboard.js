@@ -178,8 +178,6 @@ async function handleDelete(registrationId) {
   if (!ok) return;
 
   try {
-    // Look up the registration so we can also clean up the unique-index docs.
-    // We need the normalized email/mobile keys to delete the right index docs.
     const regRef = doc(db, "registrations", registrationId);
     const regSnap = await getDoc(regRef);
 
@@ -187,12 +185,28 @@ async function handleDelete(registrationId) {
 
     if (regSnap.exists()) {
       const data = regSnap.data() || {};
-      const email  = normalizeEmailKey(data.emailKey || data.email);
-      const mobile = normalizeMobileKey(data.mobileKey || data.mobile);
-      // Only queue if we have a key to delete — guard against legacy registrations
-      // that may not have emailKey/mobileKey stored.
-      if (email)  deletions.push(deleteDoc(doc(db, "registrations_unique", email)));
-      if (mobile) deletions.push(deleteDoc(doc(db, "registrations_unique", mobile)));
+      const emailKey  = normalizeEmailKey(data.emailKey  || data.email);
+      const mobileKey = normalizeMobileKey(data.mobileKey || data.mobile);
+
+      // Only delete an index doc if it is owned by the registration being
+      // deleted. Two registrations can share the same normalized email/mobile
+      // (e.g. the same person registered twice before the duplicate block was
+      // in place); in that case only the index pointing to THIS registration
+      // should be removed — the other registration's index must stay intact.
+      if (emailKey) {
+        const emailIdxRef = doc(db, "registrations_unique", emailKey);
+        const emailIdxSnap = await getDoc(emailIdxRef);
+        if (emailIdxSnap.exists() && emailIdxSnap.data()?.registrationId === registrationId) {
+          deletions.push(deleteDoc(emailIdxRef));
+        }
+      }
+      if (mobileKey) {
+        const mobileIdxRef = doc(db, "registrations_unique", mobileKey);
+        const mobileIdxSnap = await getDoc(mobileIdxRef);
+        if (mobileIdxSnap.exists() && mobileIdxSnap.data()?.registrationId === registrationId) {
+          deletions.push(deleteDoc(mobileIdxRef));
+        }
+      }
     }
 
     await Promise.all(deletions);
