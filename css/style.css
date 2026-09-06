@@ -648,7 +648,7 @@ a { color: inherit; }
   top: 0;
   right: 0;
   width: 78%;
-  height: 320px;
+  height: 360px;
   transform: rotate(3deg);
   z-index: 3;
 }
@@ -746,18 +746,18 @@ a { color: inherit; }
 }
 
 @media (max-width: 1023px) {
-  .cascade { height: 460px; }
-  .cascade-card.c-1 { width: 82%; height: 280px; right: 4%; }
+  .cascade { height: 480px; }
+  .cascade-card.c-1 { width: 82%; height: 320px; right: 4%; }
   .cascade-card.c-2 { width: 70%; height: 200px; left: 4%; }
   .cascade-card.c-3 { width: 55%; height: 90px; right: 6%; top: 42%; }
 }
 @media (max-width: 640px) {
-  .cascade { height: 380px; max-width: 360px; }
+  .cascade { height: 420px; max-width: 360px; }
   .cascade-card { padding: 1.1rem; }
-  .cascade-card.c-1 { width: 88%; height: 220px; transform: rotate(1deg); right: 2%; }
+  .cascade-card.c-1 { width: 88%; height: 260px; transform: rotate(1deg); right: 2%; }
   .cascade-card.c-2 { width: 72%; height: 160px; transform: rotate(-1deg); left: 2%; }
   .cascade-card.c-3 { width: 60%; height: 72px; transform: rotate(2deg); right: 6%; top: auto; bottom: 4%; }
-  .cascade-card .big { font-size: 32px; }
+  .cascade-card .big { font-size: 30px; line-height: 0.95; }
   .cascade-card .row { flex-direction: column; gap: 4px; margin-top: 0.75rem; }
   .cascade-card .stat-inline .v { font-size: 11px; }
 }
