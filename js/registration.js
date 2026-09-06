@@ -210,11 +210,15 @@ async function createRegistrationAtomically(payload, normalized) {
 
     if (emailSnap.exists || mobileSnap.exists) {
       // Determine which one matched so the error message can be specific.
+      // Snapshots are guaranteed to have non-undefined data() for existing
+      // docs, but we still guard the access — a malformed legacy index
+      // doc should produce a clean error, not a "Cannot read property"
+      // crash.
       const field = emailSnap.exists ? "email" : "mobile";
+      const emailData  = emailSnap.exists  ? (emailSnap.data()  || {}) : {};
+      const mobileData = mobileSnap.exists ? (mobileSnap.data() || {}) : {};
       const existingRegId =
-        (emailSnap.exists && emailSnap.data().registrationId) ||
-        (mobileSnap.exists && mobileSnap.data().registrationId) ||
-        null;
+        emailData.registrationId || mobileData.registrationId || null;
       const err = new Error("DUPLICATE_REGISTRATION");
       err.code = "DUPLICATE_REGISTRATION";
       err.field = field;

@@ -115,26 +115,26 @@
           content.innerHTML = `<div class="empty-state"><div class="icon font-display"><em>?</em></div><p>Registration <strong>${escapeHtml(id)}</strong> not found.</p></div>`;
           return;
         }
-        const r = snap.data();
+        const r = snap.data() || {};
         content.innerHTML = `
           <div class="details-wrap" data-reveal>
             <span class="card-meta" style="color: var(--ink-mute); display:block; margin-bottom: 0.5rem; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;">Registration Record</span>
-            <h2 class="font-display">${escapeHtml(r.fullName)}</h2>
-            <p class="sub">${escapeHtml(r.registrationId)} · ${escapeHtml(r.department || "")} · ${escapeHtml(r.year || "")}</p>
+            <h2 class="font-display">${escapeHtml(r.fullName || "—")}</h2>
+            <p class="sub">${escapeHtml(r.registrationId || id)} · ${escapeHtml(r.department || "")} · ${escapeHtml(r.year || "")}</p>
 
-            <div class="reg-id-display font-mono" style="margin: 1.5rem 0;">${escapeHtml(r.registrationId)}</div>
+            <div class="reg-id-display font-mono" style="margin: 1.5rem 0;">${escapeHtml(r.registrationId || id)}</div>
 
             <div class="detail-grid">
-              <div class="detail-item"><div class="lbl">Full Name</div><div class="val">${escapeHtml(r.fullName)}</div></div>
-              <div class="detail-item"><div class="lbl">Roll Number</div><div class="val font-mono">${escapeHtml(r.rollNumber)}</div></div>
-              <div class="detail-item"><div class="lbl">Department</div><div class="val">${escapeHtml(r.department)}</div></div>
-              <div class="detail-item"><div class="lbl">Year</div><div class="val">${escapeHtml(r.year)}</div></div>
-              <div class="detail-item"><div class="lbl">Email</div><div class="val">${escapeHtml(r.email)}</div></div>
-              <div class="detail-item"><div class="lbl">Mobile</div><div class="val font-mono">${escapeHtml(r.mobile)}</div></div>
-              <div class="detail-item"><div class="lbl">Gender</div><div class="val">${escapeHtml(r.gender)}</div></div>
+              <div class="detail-item"><div class="lbl">Full Name</div><div class="val">${escapeHtml(r.fullName || "—")}</div></div>
+              <div class="detail-item"><div class="lbl">Roll Number</div><div class="val font-mono">${escapeHtml(r.rollNumber || "—")}</div></div>
+              <div class="detail-item"><div class="lbl">Department</div><div class="val">${escapeHtml(r.department || "—")}</div></div>
+              <div class="detail-item"><div class="lbl">Year</div><div class="val">${escapeHtml(r.year || "—")}</div></div>
+              <div class="detail-item"><div class="lbl">Email</div><div class="val">${escapeHtml(r.email || "—")}</div></div>
+              <div class="detail-item"><div class="lbl">Mobile</div><div class="val font-mono">${escapeHtml(r.mobile || "—")}</div></div>
+              <div class="detail-item"><div class="lbl">Gender</div><div class="val">${escapeHtml(r.gender || "—")}</div></div>
               <div class="detail-item"><div class="lbl">Status</div><div class="val" style="color: var(--emerald);">${escapeHtml(r.status || "registered")}</div></div>
-              <div class="detail-item full"><div class="lbl">Skills / Interests</div><div class="val">${escapeHtml(r.interests)}</div></div>
-              <div class="detail-item full"><div class="lbl">Preferred Topic</div><div class="val">${escapeHtml(r.workshopTopic)}</div></div>
+              <div class="detail-item full"><div class="lbl">Skills / Interests</div><div class="val">${escapeHtml(r.interests || "—")}</div></div>
+              <div class="detail-item full"><div class="lbl">Preferred Topic</div><div class="val">${escapeHtml(r.workshopTopic || "—")}</div></div>
               <div class="detail-item full"><div class="lbl">Motivation</div><div class="val">${escapeHtml(r.motivation || "—")}</div></div>
               <div class="detail-item"><div class="lbl">Registered At</div><div class="val">${escapeHtml(formatDate(r.createdAt))}</div></div>
             </div>
